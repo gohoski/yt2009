@@ -760,14 +760,14 @@ module.exports = {
                 "headers": constants.headers
             }).then(r => {
                 r.buffer().then(buffer => {
-                    fs.writeFileSync(`../assets/${fname}.png`, buffer)
+                    fs.writeFile(`../assets/${fname}.png`, buffer, () => {})
                 })
             }).catch(e => {
                 fetch(link, {
                     "headers": constants.headers
                 }).then(r => {
                     r.buffer().then(buffer => {
-                        fs.writeFileSync(`../assets/${fname}.png`, buffer)
+                        fs.writeFile(`../assets/${fname}.png`, buffer, () => {})
                     })
                 }).catch(e => {})
             })
@@ -782,8 +782,9 @@ module.exports = {
             fetch(banner, {
                 "headers": constants.headers
             }).then(r => {r.buffer().then(buffer => {
-                fs.writeFileSync(`../assets/${banner_fname}.png`, buffer)
-                execDominantColor()
+                fs.writeFile(`../assets/${banner_fname}.png`, buffer, () => {
+                    execDominantColor()
+                })
             })})
         } else {
             execDominantColor()
