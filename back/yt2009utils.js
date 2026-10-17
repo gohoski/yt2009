@@ -3165,9 +3165,9 @@ module.exports = {
             }
         }
 
-        if(resp.storyboard) {
+        if(resp.storyboards) {
             try {
-                let p = resp.storyboard
+                let p = resp.storyboards
                 let spec = p.sbList[0].spec
                 bp.storyboards = {
                     "playerStoryboardSpecRenderer": {
@@ -3264,9 +3264,12 @@ module.exports = {
                 return;
             }
             let s = this.s
+            const sendfile = require("./yt2009sendfile")
 
             // convert webp to png with magick
-            
+            function sendCompat() {
+                sendfile.send(res, `${file}-COMPAT.png`)
+            }
             function startProcess() {
                 let file1 = s(
                     `${fPath}${file}`.split("\\").join("/")
@@ -3280,11 +3283,11 @@ module.exports = {
                     `"${file2}"`
                 ].join(" ")
                 if(fs.existsSync(`${fPath}${file}-COMPAT.png`)) {
-                    res.redirect(`${file}-COMPAT.png`)
+                    sendCompat()
                     return;
                 }
                 require("child_process").exec(commandline, (e,so,se) => {
-                    res.redirect(`${file}-COMPAT.png`)
+                    sendCompat()
                 })
             }
 
@@ -3292,22 +3295,15 @@ module.exports = {
             let fPath = __dirname.split("back")
             fPath.pop()
             fPath = fPath.join("back")
-            let tries = 0;
-            function avTry() {
-                if(fs.existsSync(fPath + file)) {
-                    startProcess()
-                    return;
-                }
-                tries++
-                if(tries >= 10) {
-                    res.sendStatus(404)
-                    return;
-                }
-                setTimeout(() => {
-                    avTry()
-                }, 500)
+            if(!file.startsWith("/assets/") || file.includes("..")) {
+                res.sendStatus(400)
+                return;
             }
-            avTry()
+            sendfile.waitForFile(
+                req, res, file,
+                {"tries": 10, "interval": 500},
+                startProcess
+            )
         }
     },
 
